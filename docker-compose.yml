@@ -2,10 +2,17 @@ version: '3.8'
 
 services:
      sql:
+          container_name: skinet-sql-1
           image: mcr.microsoft.com/mssql/server:2022-latest
           environment:
                ACCEPT_EULA: "Y"
                MSSQL_SA_PASSWORD: "Password@123"
           ports:
                - "1433:1433"
+          volumes:
+               - sql1data:/var/opt/mssql
+          restart: unless-stopped
+volumes:
+     sql1data:
+          driver: local
 
