@@ -1,26 +1,25 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using API.RequestHelpers;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Specification;
-using Infrastructure.Data;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+
 
 namespace API.Controllers
 {
-    [Route("api/products")]
-    [ApiController]
-    public class ProductsController(IGenericRepository<Product> repo) : ControllerBase
+
+    public class ProductsController(IGenericRepository<Product> repo) : BaseAPIController
     {
 
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts(string? brand, string? type, string? sort)
+        public async Task<ActionResult<IReadOnlyList<Product>>> GetProducts(
+            [FromQuery] ProductSpecParams specParams)
         {
-            var spec = new ProductSpecification(brand, type, sort);
-            var products = await repo.ListAsync(spec);
-            return Ok(products);
+            var spec = new ProductSpecification(specParams);
+
+            return await CreatePagedResult(spec, repo, specParams.PageIndex, specParams.PageSize);
         }
 
         [HttpGet("{id:int}")]
@@ -45,13 +44,13 @@ namespace API.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateProduct(int id, Product product)
         {
-            if (product.Id != id || !ProductExists(id)) 
-            return BadRequest("Cannot Update this product");
+            if (product.Id != id || !ProductExists(id))
+                return BadRequest("Cannot Update this product");
             repo.Update(product);
             if (await repo.SaveChangesAsync())
             {
                 return NoContent();
-            }   
+            }
             return BadRequest("Failed to update product");
         }
         [HttpDelete("{id:int}")]
