@@ -1,3 +1,4 @@
+using API.Middleware;
 using Core.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Data.SeedData;
@@ -28,7 +29,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-
+app.UseMiddleware<ExceptionMiddleware>();
 app.MapControllers();
 try
 {
